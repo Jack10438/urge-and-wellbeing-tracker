@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Urge & Wellbeing Tracker</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7f9; color: #111; }
+    header { padding: 18px 16px; background: white; border-bottom: 1px solid #e6e6e6; position: sticky; top: 0; }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 6px 0 0; color: #444; font-size: 13px; line-height: 1.35; }
+    main { max-width: 980px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; grid-template-columns: 1fr; }
+    @media (min-width: 980px) { main { grid-template-columns: 1fr 1fr; } }
+    .card { background: white; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    label { display: block; font-size: 13px; color: #333; margin: 10px 0 6px; }
+    input[type="text"], textarea, select {
+      width: 100%; padding: 10px; border: 1px solid #d6d6d6; border-radius: 10px; font-size: 14px;
+      background: #fff;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pillrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .pill { border: 1px solid #d6d6d6; border-radius: 999px; padding: 8px 10px; font-size: 13px; background: #fafafa; cursor: pointer; user-select: none; }
+    .pill.active { background: #111; color: #fff; border-color: #111; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button {
+      border: 1px solid #d6d6d6; background: #fff; padding: 10px 12px; border-radius: 12px;
+      cursor: pointer; font-size: 14px;
+    }
+    button.primary { background: #111; color: #fff; border-color: #111; }
+    button.danger { background: #b00020; color: #fff; border-color: #b00020; }
+    .muted { color: #555; font-size: 12px; line-height: 1.35; }
+    .log { max-height: 360px; overflow: auto; border-top: 1px dashed #e0e0e0; margin-top: 12px; padding-top: 10px; }
+    .entry { border: 1px solid #eee; border-radius: 12px; padding: 10px; margin: 10px 0; }
+    .entry .meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: #444; margin-bottom: 6px; }
+    .entry .meta span { background: #f3f4f6; padding: 4px 8px; border-radius: 999px; }
+    .small { font-size: 12px; color: #444; }
+    .split { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 980px) { .split { grid-template-columns: 1fr 1fr; } }
+    .callout { background: #fff7e6; border: 1px solid #ffe0a3; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Urge & Wellbeing Tracker</h1>
+    <p>
+      This is designed to help you stay safer by tracking <b>urges, mood, triggers, and what helped</b> — not details of self-harm.
+    </p>
+  </header>
+
+  <main>
+    <section class="card callout">
+      <h2>Quick support</h2>
+      <p class="muted">
+        If you feel at risk right now, contacting someone is a strong move — even if you’re not sure what to say.
+      </p>
+      <div class="btnrow">
+        <button class="danger" id="btnEmergency">Emergency (UK 999)</button>
+        <button class="primary" id="btnSamaritans">Call Samaritans (116 123)</button>
+        <button id="btnShout">Text SHOUT to 85258</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log an urge check-in</h2>
+
+      <div class="row">
+        <div>
+          <label for="mood">Mood (1 = awful, 10 = great)</label>
+          <select id="mood"></select>
+        </div>
+        <div>
+          <label for="urge">Urge intensity (0–10)</label>
+          <select id="urge"></select>
+        </div>
+      </div>
+
+      <label>What’s going on right now? (optional)</label>
+      <textarea id="context" placeholder="E.g., argument, feeling numb, lonely, overwhelmed…"></textarea>
+
+      <label>Common triggers (tap any that fit)</label>
+      <div class="pillrow" id="triggers"></div>
+
+      <label>What did you try that helped, even a little?</label>
+      <div class="pillrow" id="skills"></div>
+
+      <label for="notes">Notes (optional, keep it safe: focus on feelings + what you did)</label>
+      <textarea id="notes" placeholder="E.g., I used grounding, texted a friend, took a shower, went outside…"></textarea>
+
+      <div class="btnrow">
+        <button class="primary" id="saveBtn">Save check-in</button>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+
+    <section class="card">
+      <h2>Safety plan</h2>
+      <p class="muted">This should be your “do this first” list when urges spike.</p>
+
+      <label for="planWarning">My warning signs</label>
+      <textarea id="planWarning" placeholder="How I know I’m starting to spiral…"></textarea>
+
+      <label for="planSteps">Steps that usually help (in order)</label>
+      <textarea id="planSteps" placeholder="1) Drink water  2) Move to a different room  3) 5-4-3-2-1 grounding…"></textarea>
+
+      <label for="planPeople">People I can contact</label>
+      <textarea id="planPeople" placeholder="Names + numbers + what to say…"></textarea>
+
+      <label for="planProfessional">Professional supports</label>
+      <textarea id="planProfessional" placeholder="GP, therapist, crisis team, NHS 111, local numbers…"></textarea>
+
+      <div class="btnrow">
+        <button class="primary" id="savePlanBtn">Save safety plan</button>
+      </div>
+      <p class="small" id="planSaved"></p>
+    </section>
+
+    <section class="card">
+      <h2>Grounding / reset</h2>
+      <p class="muted">Pick one and do it for 60–120 seconds.</p>
+      <div class="btnrow">
+        <button id="g54321">5–4–3–2–1 senses</button>
+        <button id="boxBreath">Box breathing</button>
+        <button id="coldWater">Cold water reset</button>
+        <button id="tinyTask">One tiny task</button>
+      </div>
+      <div class="entry" id="groundingText" style="display:none;"></div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "urge_wellbeing_tracker_v1";
+    const PLAN_KEY = "urge_wellbeing_plan_v1";
+
+    const triggerOptions = [
+      "Conflict", "Loneliness", "Numbness", "Shame", "Stress", "Overwhelm",
+      "Bad sleep", "Alcohol/substances", "Social media", "Work/school pressure",
+      "Flashbacks", "Feeling out of control"
+    ];
+
+    const skillOptions = [
+      "Text/call someone", "Grounding (5-4-3-2-1)", "Breathing", "Shower/bath",
+      "Walk outside", "Music", "Journal", "Eat something", "Hydrate", "Nap/rest",
+      "Change location", "Hold ice / cold water", "Distraction (video/game)"
+    ];
+
+    const el = (id) => document.getElementById(id);
+
+    function fillSelect(id, from, to) {
+      const s = el(id);
+      for (let i = from; i <= to; i++) {
+        const opt = document.createElement("option");
+        opt.value = String(i);
+        opt.textContent = String(i);
+        s.appendChild(opt);
+      }
+    }
+
+    function pillGroup(containerId, options) {
+      const container = el(containerId);
+      container.innerHTML = "";
+      options.forEach(txt => {
+        const d = document.createElement("div");
+        d.className = "pill";
+        d.textContent = txt;
+        d.dataset.value = txt;
+        d.addEventListener("click", () => d.classList.toggle("active"));
+        container.appendChild(d);
+      });
+    }
+
+    function getActivePills(containerId) {
+      return Array.from(el(containerId).querySelectorAll(".pill.active")).map(p => p.dataset.value);
+    }
+
+    function setActivePills(containerId, values) {
+      const set = new Set(values || []);
+      Array.from(el(containerId).querySelectorAll(".pill")).forEach(p => {
+        p.classList.toggle("active", set.has(p.dataset.value));
+      });
+    }
+
+    function loadEntries() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function renderLog() {
+      const log = el("log");
+      const entries = loadEntries();
+      if (!entries.length) {
+        log.innerHTML = `<p class="muted">No check-ins yet. Saving even one helps you spot patterns.</p>`;
+        return;
+      }
+      log.innerHTML = entries.map((e, idx) => {
+        const date = new Date(e.ts);
+        const when = date.toLocaleString();
+        const safeContext = escapeHtml(e.context || "");
+        const safeNotes = escapeHtml(e.notes || "");
+        const triggers = (e.triggers || []).map(t => `<span>${escapeHtml(t)}</span>`).join("");
+        const skills = (e.skills || []).map(s => `<span>${escapeHtml(s)}</span>`).join("");
+        return `
+          <div class="entry">
+            <div class="meta">
+              <span>🕒 ${escapeHtml(when)}</span>
+              <span>🙂 Mood: ${escapeHtml(String(e.mood))}</span>
+              <span>⚡ Urge: ${escapeHtml(String(e.urge))}</span>
+            </div>
+            ${triggers ? `<div class="meta">Triggers: ${triggers}</div>` : ""}
+            ${skills ? `<div class="meta">Helped: ${skills}</div>` : ""}
+            ${safeContext ? `<div class="small"><b>Context:</b> ${safeContext}</div>` : ""}
+            ${safeNotes ? `<div class="small" style="margin-top:6px;"><b>Notes:</b> ${safeNotes}</div>` : ""}
+            <div class="btnrow" style="margin-top:10px;">
+              <button onclick="deleteEntry(${idx})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    window.deleteEntry = function(idx) {
+      const entries = loadEntries();
+      entries.splice(idx, 1);
+      saveEntries(entries);
+      renderLog();
+    }
+
+    function exportJson() {
+      const entries = loadEntries();
+      const plan = loadPlan();
+      const blob = new Blob([JSON.stringify({ plan, entries }, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "urge-wellbeing-tracker-export.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function loadPlan() {
+      try {
+        return JSON.parse(localStorage.getItem(PLAN_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function savePlan(plan) {
+      localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+    }
+
+    function renderPlan() {
+      const plan = loadPlan();
+      el("planWarning").value = plan.warning || "";
+      el("planSteps").value = plan.steps || "";
+      el("planPeople").value = plan.people || "";
+      el("planProfessional").value = plan.professional || "";
+    }
+
+    function showGrounding(text) {
+      const box = el("groundingText");
+      box.style.display = "block";
+      box.innerHTML = `<b>Do this now:</b><br>${escapeHtml(text).replaceAll("\n", "<br>")}`;
+      box.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // Init
+    fillSelect("mood", 1, 10);
+    fillSelect("urge", 0, 10);
+    el("mood").value = "5";
+    el("urge").value = "0";
+
+    pillGroup("triggers", triggerOptions);
+    pillGroup("skills", skillOptions);
+
+    el("saveBtn").addEventListener("click", () => {
+      const entry = {
+        ts: Date.now(),
+        mood: Number(el("mood").value),
+        urge: Number(el("urge").value),
+        context: el("context").value.trim(),
+        triggers: getActivePills("triggers"),
+        skills: getActivePills("skills"),
+        notes: el("notes").value.trim()
+      };
+      const entries = loadEntries();
+      entries.unshift(entry);
+      saveEntries(entries);
+
+      // reset (keep mood/urge for convenience)
+      el("context").value = "";
+      el("notes").value = "";
+      setActivePills("triggers", []);
+      setActivePills("skills", []);
+      renderLog();
+    });
+
+    el("exportBtn").addEventListener("click", exportJson);
+
+    el("clearBtn").addEventListener("click", () => {
+      if (!confirm("This will delete all check-ins and your plan from this device. Continue?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PLAN_KEY);
+      renderPlan();
+      renderLog();
+      el("planSaved").textContent = "";
+    });
+
+    el("savePlanBtn").addEventListener("click", () => {
+      const plan = {
+        warning: el("planWarning").value.trim(),
+        steps: el("planSteps").value.trim(),
+        people: el("planPeople").value.trim(),
+        professional: el("planProfessional").value.trim()
+      };
+      savePlan(plan);
+      el("planSaved").textContent = "Saved.";
+      setTimeout(() => el("planSaved").textContent = "", 1500);
+    });
+
+    // Quick support buttons (tel: works best on phones)
+    el("btnEmergency").addEventListener("click", () => { window.location.href = "tel:999"; });
+    el("btnSamaritans").addEventListener("click", () => { window.location.href = "tel:116123"; });
+    el("btnShout").addEventListener("click", () => {
+      alert("To text Shout in the UK: open your Messages app and send SHOUT to 85258.");
+    });
+
+    // Grounding buttons
+    el("g54321").addEventListener("click", () => showGrounding(
+      "5 things you can see\n4 things you can feel\n3 things you can hear\n2 things you can smell\n1 thing you can taste\n\nGo slowly. Name each one out loud if you can."
+    ));
+    el("boxBreath").addEventListener("click", () => showGrounding(
+      "Box breathing (4-4-4-4):\nInhale 4… hold 4… exhale 4… hold 4…\nRepeat 4 times."
+    ));
+    el("coldWater").addEventListener("click", () => showGrounding(
+      "Cold water reset:\nSplash cold water on your face, or hold something cold (ice wrapped in cloth) for 30–60 seconds.\nThen take 5 slow breaths."
+    ));
+    el("tinyTask").addEventListener("click", () => showGrounding(
+      "One tiny task:\nPick ONE: drink water, open a window, tidy one surface, change clothes, step outside for 60 seconds.\nThen reassess urge level."
+    ));
+
+    renderPlan();
+    renderLog();
+  </script>
+</body>
+</html>
